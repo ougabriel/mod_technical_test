@@ -1,38 +1,23 @@
-output "cluster_id" {
-  value = aws_eks_cluster.gab.id
+# Output EKS Cluster ID
+output "eks_cluster_id" {
+  description = "The EKS cluster ID"
+  value       = aws_eks_cluster.eks_cluster.id
 }
 
-output "node_group_id" {
-  value = aws_eks_node_group.gab.id
-}
-
-output "vpc_id" {
-  value = aws_vpc.gab_vpc.id
-}
-
-output "subnet_ids" {
-  value = aws_subnet.gab_subnet[*].id
-}
-
-##ec2
-
-output "ec2_instance_ids" {
-  description = "The IDs of the EC2 instances"
-  value       = aws_instance.gab_ec2_instance[*].id
-}
-
+# Output EC2 instance public IPs
 output "ec2_instance_public_ips" {
-  description = "The public IPs of the EC2 instances"
-  value       = aws_instance.gab_ec2_instance[*].public_ip
+  description = "The public IPs of the Ubuntu EC2 instances"
+  value       = aws_instance.ubuntu_instance[*].public_ip
 }
 
+# Output EC2 instance private IPs
 output "ec2_instance_private_ips" {
-  description = "The private IPs of the EC2 instances"
-  value       = aws_instance.gab_ec2_instance[*].private_ip
+  description = "The private IPs of the Ubuntu EC2 instances"
+  value       = aws_instance.ubuntu_instance[*].private_ip
 }
 
-output "key_pair_name" {
-  description = "The name of the EC2 key pair"
-  value       = aws_key_pair.gab_key_pair.key_name
-}
+# Output VPC ID
+output "vpc_id" {
+  description = "The ID of the VPC"
+  value       = aws_vpc.main.id
 }
