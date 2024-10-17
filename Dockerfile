@@ -4,7 +4,7 @@ FROM python:3.11-slim AS base
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-ENV FLASK_SECRET_KEY='G@btechnicalmod-test2024'
+ENV FLASK_SECRET_KEY='M!technicalmod-test2024'
 
 # Set the working directory
 WORKDIR /app

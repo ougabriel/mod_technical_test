@@ -1,0 +1,11 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rolebinding
+subjects:
+- kind: ServiceAccount
+  name: jenkins # The service account created earlier
+roleRef:
+  kind: Role
+  name: role  # The role created earlier
+  apiGroup: rbac.authorization.k8s.io
