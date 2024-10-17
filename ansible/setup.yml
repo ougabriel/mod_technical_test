@@ -1,0 +1,89 @@
+---
+- name: Setup EKS and Docker Containers
+  hosts: all
+  become: yes
+  vars:
+    aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+    aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+    region: "eu-west-2"
+    sonarqube_version: "latest"
+    nexus_version: "latest"
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - python3-pip
+          - docker.io
+          - awscli
+          - curl
+        state: present
+      tags: install
+
+    - name: Ensure Docker is running
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Configure AWS CLI
+      command: >
+        aws configure set aws_access_key_id {{ aws_access_key }}
+        && aws configure set aws_secret_access_key {{ aws_secret_key }}
+        && aws configure set default.region {{ region }}
+      tags: aws-cli
+
+    - name: Install kubectl
+      shell: |
+        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x ./kubectl
+        mv ./kubectl /usr/local/bin/kubectl
+      tags: kubectl
+
+    - name: Ensure kubectl is installed
+      command: kubectl version --client
+      register: kubectl_version
+      changed_when: false
+      tags: kubectl
+
+    - name: Setup kubeconfig for EKS
+      command: >
+        aws eks update-kubeconfig --name gab-cluster --region {{ region }}
+      tags: kubeconfig
+
+    - name: Run SonarQube Docker container
+      docker_container:
+        name: sonarqube
+        image: sonarqube:{{ sonarqube_version }}
+        state: started
+        restart_policy: always
+        published_ports:
+          - "9000:9000"
+        env:
+          - SONAR_JDBC_URL=jdbc:postgresql://db:5432/sonar
+        networks:
+          - sonarqube-net
+      when: inventory_hostname == "ec2_instance_1"
+      tags: sonarqube
+
+    - name: Run Nexus Docker container
+      docker_container:
+        name: nexus
+        image: sonatype/nexus3:{{ nexus_version }}
+        state: started
+        restart_policy: always
+        published_ports:
+          - "8081:8081"
+        networks:
+          - nexus-net
+      when: inventory_hostname == "ec2_instance_2"
+      tags: nexus
+
+    - name: Create Docker networks
+      docker_network:
+        name: "{{ item }}-net"
+        state: present
+      loop:
+        - sonarqube
+        - nexus
+      tags: networks
