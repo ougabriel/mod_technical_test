@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-west-2"
+  region = "eu-west-2"
 }
 
 # Select the workspace (dev, prod, stage)
@@ -79,8 +79,8 @@ resource "aws_eks_node_group" "eks_node_group" {
   subnet_ids      = aws_subnet.main[*].id
 
   scaling_config {
-    desired_size = 2
-    max_size     = 3
+    desired_size = 1
+    max_size     = 1
     min_size     = 1
   }
 
@@ -142,6 +142,16 @@ resource "aws_iam_role_policy_attachment" "eks_node_group_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
 
+resource "aws_iam_role_policy_attachment" "ecr_read_only" {
+  role       = aws_iam_role.eks_node_group_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+resource "aws_iam_role_policy_attachment" "cni_policy" {
+  role       = aws_iam_role.eks_node_group_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+
 resource "aws_security_group" "eks_cluster_sg" {
   vpc_id = aws_vpc.main.id
 
@@ -193,7 +203,7 @@ resource "aws_ecr_repository" "app_repo" {
 # Ubuntu EC2 Instances
 resource "aws_instance" "ubuntu_instance" {
   count         = 2
-  ami           = "ami-0d8f6eb4f641ef691" # Ubuntu AMI, make sure it's available in your region
+  ami           = "ami-0e8d228ad90af673b" # Ubuntu AMI for eu-west-2
   instance_type = "t2.medium"
   subnet_id     = aws_subnet.main[count.index].id
   key_name      = var.ssh_key_name
@@ -203,8 +213,12 @@ resource "aws_instance" "ubuntu_instance" {
   }
 }
 
-# Key Pair
-resource "aws_key_pair" "key_pair" {
-  key_name   = var.ssh_key_name
-  public_key = file(var.ssh_public_key_path)
-}
+# # Key Pair
+# resource "aws_key_pair" "key_pair" {
+#   key_name   = var.ssh_key_name
+#   public_key = file(var.ssh_public_key_path)
+
+#     lifecycle {
+#     prevent_destroy = true
+#   }
+# }
