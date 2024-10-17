@@ -25,17 +25,17 @@ jobs:
       - name: Install dependencies
         run: |
           python -m venv venv
-          . venv/bin/activate
+          source venv/bin/activate  # Use source for clarity
           pip install -r requirements.txt
 
       - name: Run Unit Tests
         run: |
-          . venv/bin/activate
+          source venv/bin/activate
           pytest
 
       - name: Lint Test with Flake8
         run: |
-          . venv/bin/activate
+          source venv/bin/activate
           pip install flake8
           flake8 .
 
@@ -105,6 +105,12 @@ jobs:
         run: |
           CLUSTER_NAME=eks-cluster-${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
           aws eks update-kubeconfig --name $CLUSTER_NAME --region ${{ secrets.AWS_REGION }}
+
+      - name: Install kubectl
+        run: |
+          curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
 
       - name: Deploy to Kubernetes
         env:
