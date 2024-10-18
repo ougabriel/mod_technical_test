@@ -62,15 +62,19 @@ jobs:
 
       - name: Build and tag Docker image
         run: |
-              
+          IMAGE_TAG=${{ github.sha }}  # Full commit hash
+          SHORT_IMAGE_TAG=${IMAGE_TAG:0:6}  # Take the first 6 characters
+          echo "Building Docker image with tag: $SHORT_IMAGE_TAG"
+          
+          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${SHORT_IMAGE_TAG} .
+
       - name: Push Docker image to ECR
         run: |
           IMAGE_TAG=${{ github.sha }}  # Full commit hash
           SHORT_IMAGE_TAG=${IMAGE_TAG:0:6}  # Take the first 6 characters
-          echo "Pushing Docker image with short tag: $SHORT_IMAGE_TAG"  # Log the tag for debugging
+          echo "Pushing Docker image with short tag: $SHORT_IMAGE_TAG"
           
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${SHORT_IMAGE_TAG}
-    
   deploy_terraform_and_k8s:
     needs: build_and_push_docker_image
     runs-on: ubuntu-latest
