@@ -62,24 +62,15 @@ jobs:
 
       - name: Build and tag Docker image
         run: |
-         IMAGE_TAG=${{ github.sha }}  # Ensure no leading colon
-         echo "Building Docker image with tag: $IMAGE_TAG"  # Log the tag for debugging
-
-          # Check the first character of IMAGE_TAG
-         if [[ "${IMAGE_TAG:0:1}" == ":" ]]; then
-         echo "Error: IMAGE_TAG has a leading colon!"
-         exit 1
-         fi
-
-         docker build -t ${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG} .
-         docker tag ${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG}
-
+              
       - name: Push Docker image to ECR
         run: |
-          IMAGE_TAG=${{ github.sha }} 
-          echo "Pushing Docker image with tag: $IMAGE_TAG"  # Optional: log the tag for debugging
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${IMAGE_TAG}
-  
+          IMAGE_TAG=${{ github.sha }}  # Full commit hash
+          SHORT_IMAGE_TAG=${IMAGE_TAG:0:6}  # Take the first 6 characters
+          echo "Pushing Docker image with short tag: $SHORT_IMAGE_TAG"  # Log the tag for debugging
+          
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${SHORT_IMAGE_TAG}
+    
   deploy_terraform_and_k8s:
     needs: build_and_push_docker_image
     runs-on: ubuntu-latest
