@@ -5,6 +5,22 @@ provider "aws" {
 # Select the workspace (dev, prod, stage)
 terraform {
   required_version = ">= 0.12"
+
+  backend "s3" {
+    bucket         = "my-terraform-state-bucket" # bucket name
+    key            = "terraform/state/${terraform.workspace}.tfstate" # Path in the bucket
+    region         = "eu-west-2" 
+  }
+}
+
+# Create an S3 bucket for the Terraform state file
+resource "aws_s3_bucket" "terraform_state_bucket" {
+  bucket = "my-terraform-state-bucket"
+  acl    = "private"
+
+  tags = {
+    Name = "terraform-state-bucket-${terraform.workspace}"
+  }
 }
 
 # Create a VPC for EKS and EC2 instances
@@ -200,18 +216,18 @@ resource "aws_ecr_repository" "app_repo" {
   }
 }
 
-# Ubuntu EC2 Instances
-resource "aws_instance" "ubuntu_instance" {
-  count         = 2
-  ami           = "ami-0e8d228ad90af673b" # Ubuntu AMI for eu-west-2
-  instance_type = "t2.medium"
-  subnet_id     = aws_subnet.main[count.index].id
-  key_name      = var.ssh_key_name
+# # Ubuntu EC2 Instances
+# resource "aws_instance" "ubuntu_instance" {
+#   count         = 2
+#   ami           = "ami-0e8d228ad90af673b" # Ubuntu AMI for eu-west-2
+#   instance_type = "t2.medium"
+#   subnet_id     = aws_subnet.main[count.index].id
+#   key_name      = var.ssh_key_name
 
-  tags = {
-    Name = "ubuntu-instance-${count.index}-${terraform.workspace}"
-  }
-}
+#   tags = {
+#     Name = "ubuntu-instance-${count.index}-${terraform.workspace}"
+#   }
+# }
 
 # # Key Pair
 # resource "aws_key_pair" "key_pair" {
