@@ -68,6 +68,10 @@ jobs:
           else
             echo "ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY_DEV }}" >> $GITHUB_ENV
           fi
+      - name: Set IMAGE_TAG
+        run: |
+            IMAGE_TAG=v1.0.1  # Replace with versioning logic
+            echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV 
 
       - name: Build and tag Docker image
         run: |
