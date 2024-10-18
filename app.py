@@ -2,13 +2,11 @@
 from flask import (
     Flask, render_template, redirect, url_for, flash, jsonify
 )
-
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired
 import os
 import subprocess
-
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
@@ -25,7 +23,6 @@ def get_last_commit_sha():
         ).strip().decode('utf-8')
     except Exception as e:
         return str(e)
-    
 
 
 class LoginForm(FlaskForm):
