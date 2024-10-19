@@ -114,14 +114,14 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Initialize Terraform
-        run: terraform init
+        run: terraform init -input=false
 
       - name: Select Terraform Workspace
         run: |
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            terraform workspace select prod || terraform workspace new prod
+            terraform workspace select prod || exit 1
           else
-            terraform workspace select dev || terraform workspace new dev
+            terraform workspace select dev || exit 1
           fi
 
       - name: Apply Terraform Changes
