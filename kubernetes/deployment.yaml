@@ -4,7 +4,7 @@ metadata:
   name: gab-app-deployment
   labels:
     app: gab-app
-    environment: "{{ .Values.environment }}" 
+    environment: "" 
 spec:
   replicas: 1
   selector:
@@ -14,7 +14,7 @@ spec:
     metadata:
       labels:
         app: gab-app
-        environment: "{{ .Values.environment }}"
+        environment: ""
     spec:
       containers:
         - name: gab-app-container

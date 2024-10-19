@@ -149,4 +149,4 @@ jobs:
 
     - name: Patch Deployment with new image
       run: |
-        kubectl set image deployment/my-app-deployment my-app-container=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}
+        kubectl set image deployment/gab-app-deployment my-app-container=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}
