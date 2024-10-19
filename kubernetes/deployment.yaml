@@ -4,7 +4,7 @@ metadata:
   name: gab-app-deployment
   labels:
     app: gab-app
-    environment: "" 
+    environment: "${ENVIRONMENT}"  # Environment variable will be injected 
 spec:
   replicas: 1
   selector:
@@ -14,14 +14,14 @@ spec:
     metadata:
       labels:
         app: gab-app
-        environment: ""
+        environment: "${ENVIRONMENT}"  # Environment variable will be injected
     spec:
       containers:
         - name: gab-app-container
-          image: "{{secrets.AWS_ACCESS_KEY_ID}}.dkr.ecr.{{secrets.AWS_REGION}}.amazonaws.com/$ECR_REPOSITORY:${{env.IMAGE_TAG}}"  # Dynamic ECR image URL
+          image: "IMAGE_URL"  # will be replaced by the pipeline
           ports:
             - containerPort: 80
           env:
             - name: ENVIRONMENT
-              value: "${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}" # Sets environment based on branch
+              value: "${ENVIRONMENT_LABEL}"  # Set from the pipeline
 ---

@@ -141,6 +141,10 @@ jobs:
       run: |
         sed -i "s/environment: .*/environment: $ENVIRONMENT_LABEL/" ./kubernetes/deployment.yaml
         sed -i "s/environment: .*/environment: ${ENVIRONMENT_LABEL}/" ./kubernetes/service.yaml
+    - name: Replace placeholders in deployment.yaml
+      run: |
+        sed -i "s|IMAGE_URL|${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG|" ./kubernetes/deployment.yaml
+        sed -i "s|\${ENVIRONMENT}|${ENVIRONMENT}|" ./kubernetes/deployment.yaml
   
     - name: Deploy to Kubernetes
       run: |
