@@ -167,7 +167,7 @@ jobs:
     - name: Describe Kubernetes Nodes
       run: | 
           echo "Getting Kubernetes nodes details"
-          kubectl describe node $ENVIRONMENT_LABEL
+          kubectl describe nodes
     
     # - name: Get External IP
     #   id: get_external_ip
