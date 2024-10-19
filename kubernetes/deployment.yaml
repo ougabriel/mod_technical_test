@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gab-app-deployment
+  labels:
+    app: gab-app
+    environment: "{{ .Values.environment }}" 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gab-app
+  template:
+    metadata:
+      labels:
+        app: gab-app
+        environment: "{{ .Values.environment }}"
+    spec:
+      containers:
+        - name: gab-app-container
+          image: "{{secrets.AWS_ACCESS_KEY_ID}}.dkr.ecr.{{secrets.AWS_REGION}}.amazonaws.com/$ECR_REPOSITORY:${{env.IMAGE_TAG}}"  # Dynamic ECR image URL
+          ports:
+            - containerPort: 80
+          env:
+            - name: ENVIRONMENT
+              value: "${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}" # Sets environment based on branch
+---
