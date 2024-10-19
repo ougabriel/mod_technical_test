@@ -150,6 +150,10 @@ jobs:
     - name: Patch Deployment with new image
       run: |
         kubectl set image deployment/gab-app-deployment gab-app-container=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}
-    - name: Get the service 
+    - name: Get external IP for service
+      id: get_external
       run: |
-        kubectl get svc 
+          EXTERNAL_IP=$(kubectl get svc gab-app-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          echo "EXTERNAL_IP=$EXTERNAL_IP" >> $GITHUB_ENV
+    - name: Output External IP
+      run: echo "External IP is ${{ env.EXTERNAL_IP }}" 
