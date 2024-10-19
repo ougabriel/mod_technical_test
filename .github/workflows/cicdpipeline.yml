@@ -139,13 +139,14 @@ jobs:
 
     - name: Apply service configuration
       run: |
-        sed -i "s/environment: .*/environment: $ENVIRONMENT_LABEL/" ./kubernetes/service.yaml
+        sed -i "s/environment: .*/environment: $ENVIRONMENT_LABEL/" ./kubernetes/deployment.yaml
+        sed -i "s/environment: .*/environment: ${ENVIRONMENT_LABEL}/" ./kubernetes/service.yaml
   
     - name: Deploy to Kubernetes
       run: |
         kubectl apply -f ./kubernetes/deployment.yaml
         kubectl apply -f ./kubernetes/service.yaml
-        
+
     - name: Patch Deployment with new image
       run: |
         kubectl set image deployment/my-app-deployment my-app-container=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}
