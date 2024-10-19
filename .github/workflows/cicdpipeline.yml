@@ -150,10 +150,32 @@ jobs:
     - name: Patch Deployment with new image
       run: |
         kubectl set image deployment/gab-app-deployment gab-app-container=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}
+   
+    - name: Get Kubernetes Nodes
+      run: |
+          echo "Getting Kubernetes nodes..."
+          kubectl get nodes -o wide
+
+    - name: Get Kubernetes Pods
+      run: |
+          echo "Getting Kubernetes pods..."
+          kubectl get pods -o wide --all-namespaces   
+    
     - name: Get external IP for service
       id: get_external
       run: |
           EXTERNAL_IP=$(kubectl get svc gab-app-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           echo "EXTERNAL_IP=$EXTERNAL_IP" >> $GITHUB_ENV
+   
     - name: Output External IP
-      run: echo "External IP is ${{ env.EXTERNAL_IP }}" 
+      run: echo "External IP is ${{ env.EXTERNAL_IP }}"
+    
+    - name: Resolve External IP to IPv4
+      id: resolve_ip
+      run: |
+          # Use dig to resolve the external IP
+          IPV4_ADDR=$(dig +short ${{ env.EXTERNAL_IP }})
+          echo "IPV4_ADDR=$IPV4_ADDR" >> $GITHUB_ENV
+   
+    - name: Output IPv4 Address
+      run: echo "IPv4 Address is ${{ env.IPV4_ADDR }}"
