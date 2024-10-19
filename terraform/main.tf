@@ -19,6 +19,9 @@ resource "aws_s3_bucket" "terraform_state_bucket" {
   tags = {
     Name = "terraform-state-bucket-${terraform.workspace}"
   }
+   lifecycle {
+    prevent_destroy = false
+  }
 }
 
 terraform {
