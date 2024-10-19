@@ -172,7 +172,7 @@ jobs:
       id: resolve_ip
       run: |
           echo "Resolving external IP to IPv4..."
-          IPV4_ADDR=$(dig +short ${{ $EXTERNAL_IP }})
+          IPV4_ADDR=$(dig +short $EXTERNAL_IP)
           if [ -z "$IPV4_ADDR" ]; then
             echo "Error: Unable to resolve external IP to IPv4"
             exit 1
