@@ -117,6 +117,7 @@ jobs:
           terraform workspace select prod
         else
           terraform workspace select dev
+        fi
       working-directory: .github/workflows/terraform
 
     - name: Apply Terraform Changes
