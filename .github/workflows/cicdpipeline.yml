@@ -114,9 +114,9 @@ jobs:
     - name: Select Terraform Workspace
       run: |
         if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-          terraform workspace select prod || exit 1
+          terraform workspace select prod
         else
-          terraform workspace select dev || exit 1
+          terraform workspace select dev
       working-directory: .github/workflows/terraform
 
     - name: Apply Terraform Changes
