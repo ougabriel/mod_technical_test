@@ -109,7 +109,7 @@ jobs:
 
     - name: Initialize Terraform
       run: terraform init
-      working-directory: ./terraform
+      working-directory: .github/workflows/terraform
 
     - name: Select Terraform Workspace
       run: |
@@ -117,11 +117,11 @@ jobs:
           terraform workspace select prod || exit 1
         else
           terraform workspace select dev || exit 1
-      working-directory: ./terraform
+      working-directory: .github/workflows/terraform
 
     - name: Apply Terraform Changes
       run: terraform apply -auto-approve
-      working-directory: ./terraform
+      working-directory: .github/workflows/terraform
 
     - name: Update Kubeconfig for EKS Cluster
       run: |
