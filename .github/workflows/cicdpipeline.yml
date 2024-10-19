@@ -114,7 +114,8 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Initialize Terraform
-        run: terraform init -input=false
+        run: terraform init
+        working-directory: ./terraform
 
       - name: Select Terraform Workspace
         run: |
