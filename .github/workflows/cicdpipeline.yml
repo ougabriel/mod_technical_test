@@ -175,6 +175,9 @@ jobs:
           IPV4_ADDR=$(dig +short ${{ $EXTERNAL_IP }})
           if [ -z "$IPV4_ADDR" ]; then
             echo "Error: Unable to resolve external IP to IPv4"
+            exit 1
+          else
+            echo "IPV4_ADDR=$IPV4_ADDR" >> $GITHUB_ENV
             echo "Resolved IPv4 Address is $IPV4_ADDR"
           fi
 
