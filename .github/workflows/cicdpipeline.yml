@@ -150,3 +150,6 @@ jobs:
     - name: Patch Deployment with new image
       run: |
         kubectl set image deployment/gab-app-deployment gab-app-container=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}
+    - name: Get the service 
+      run: |
+        kubectl get svc 
