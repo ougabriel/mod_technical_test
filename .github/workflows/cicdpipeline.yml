@@ -3,12 +3,12 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - dev    # Trigger when pushing to dev
-      - main   # Trigger when pushing to main
+      - dev
+      - main
   pull_request:
     branches:
-      - dev    # Trigger when a pull request is opened against dev
-      - main   # Trigger when a pull request is opened against main
+      - dev
+      - main
 
 jobs:
   build_and_test:
@@ -29,10 +29,6 @@ jobs:
         venv/bin/pip install -r requirements.txt
         venv/bin/pip install pytest flake8
 
-    - name: Check Python version
-      run: |
-        venv/bin/python --version
-
     - name: Run Unit Tests
       run: |
         venv/bin/python -m pytest
@@ -41,109 +37,106 @@ jobs:
       run: |
         venv/bin/python -m flake8 .
 
-  # Build and push Docker image
   build_and_push_docker_image:
     needs: build_and_test
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Set up AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+    - name: Set up AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+    - name: Log in to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Determine ECR Repository
-        run: |
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY_PROD }}" >> $GITHUB_ENV
-          else
-            echo "ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY_DEV }}" >> $GITHUB_ENV
-          fi
-      - name: Set IMAGE_TAG
-        run: |
-            IMAGE_TAG=v1.0.1  # Replace with versioning logic
-            echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV 
+    - name: Set environment variables based on branch
+      run: |
+        if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          echo "ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY_PROD }}" >> $GITHUB_ENV
+          echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+        else
+          echo "ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY_DEV }}" >> $GITHUB_ENV
+          echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+        fi
 
-      - name: Build and tag Docker image
-        run: |
-          IMAGE_TAG=v1.0.1  # Example versioning, you can use GitHub commit hash or dynamic versioning
-          echo "Building Docker image with tag: $IMAGE_TAG"
-          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG .
+    - name: Set IMAGE_TAG
+      run: |
+        IMAGE_TAG=$(git rev-parse --short HEAD)
+        echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
-      - name: Push Docker image to ECR
-        run: |
-          echo "Pushing Docker image with tag: $IMAGE_TAG"
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+    - name: Build and tag Docker image
+      run: |
+        docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG .
 
-  # Deploy with Terraform and Kubernetes
+    - name: Push Docker image to ECR
+      run: |
+        docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+
   deploy_terraform_and_k8s:
     needs: build_and_push_docker_image
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Set up AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+    - name: Set up AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Install kubectl
-        run: |
-          curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x ./kubectl
-          sudo mv ./kubectl /usr/local/bin/kubectl
+    - name: Install kubectl
+      run: |
+        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin/kubectl
 
-      - name: Check kubectl version
-        run: |
-          kubectl version --client
+    - name: Check kubectl version
+      run: |
+        kubectl version --client
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v2
 
-      - name: Initialize Terraform
-        run: terraform init
-        working-directory: .github/workflows/terraform
+    - name: Initialize Terraform
+      run: terraform init
+      working-directory: ./terraform
 
-      - name: Select Terraform Workspace
-        run: |
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            terraform workspace select prod || exit 1
-          else
-            terraform workspace select dev || exit 1
-          fi
-        working-directory: ./.github/workflows/terraform
+    - name: Select Terraform Workspace
+      run: |
+        if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          terraform workspace select prod || exit 1
+        else
+          terraform workspace select dev || exit 1
+      working-directory: ./terraform
 
-      - name: Apply Terraform Changes
-        run: terraform apply -auto-approve
-        working-directory: ./.github/workflows/terraform
+    - name: Apply Terraform Changes
+      run: terraform apply -auto-approve
+      working-directory: ./terraform
 
-      - name: Update Kubeconfig for EKS Cluster
-        run: |
-          CLUSTER_NAME=eks-cluster-${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
-          aws eks update-kubeconfig --name $CLUSTER_NAME --region ${{ secrets.AWS_REGION }}
+    - name: Update Kubeconfig for EKS Cluster
+      run: |
+        if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          CLUSTER_NAME=eks-cluster-prod
+        else
+          CLUSTER_NAME=eks-cluster-dev
+        fi
+        aws eks update-kubeconfig --name $CLUSTER_NAME --region ${{ secrets.AWS_REGION }}
 
-      - name: Deploy to Kubernetes
-        env:
-          IMAGE_TAG: v1.0.1
-        run: |
-          kubectl apply -f ./kubernetes/deployment.yaml
-          kubectl apply -f ./kubernetes/service.yaml
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl apply -f ./kubernetes/deployment.yaml
+        kubectl apply -f ./kubernetes/service.yaml
 
-      - name: Patch Deployment with new image
-        env:
-          IMAGE_TAG: v1.0.1
-        run: |
-          kubectl set image deployment/my-app-deployment my-app-container=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}
+    - name: Patch Deployment with new image
+      run: |
+        kubectl set image deployment/my-app-deployment my-app-container=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}
