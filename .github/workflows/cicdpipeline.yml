@@ -151,9 +151,9 @@ jobs:
         kubectl apply -f ./kubernetes/deployment.yaml
         kubectl apply -f ./kubernetes/service.yaml
 
-    - name: Patch Deployment with new image
-      run: |
-        kubectl set image deployment/gab-app-deployment gab-app-container=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}
+    # - name: Patch Deployment with new image
+    #   run: |
+    #     kubectl set image deployment/gab-app-deployment gab-app-container=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}
    
     - name: Get Kubernetes Nodes
       run: |
