@@ -139,8 +139,8 @@ jobs:
         env:
           IMAGE_TAG: v1.0.1
         run: |
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
+          kubectl apply -f ./kubernetes/deployment.yaml
+          kubectl apply -f ./kubernetes/service.yaml
 
       - name: Patch Deployment with new image
         env:
