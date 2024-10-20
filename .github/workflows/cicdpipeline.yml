@@ -303,8 +303,8 @@ jobs:
           fi
           aws eks update-kubeconfig --name $CLUSTER_NAME --region ${{ secrets.AWS_REGION }}
 
-      - name: Make update_k8s_yml.sh executable
-        run: chmod +x ./kubernetes/update_k8s_yml.sh
+      - name: Make update-k8s-yaml.sh executable
+        run: chmod +x ./kubernetes/update-k8s-yaml.sh
       
       - name: Update deployment.yaml with new ECR image
         run: |
