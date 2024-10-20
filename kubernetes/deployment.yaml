@@ -4,7 +4,7 @@ metadata:
   name: gab-app-deployment
   labels:
     app: gab-app
-    environment: "${ENVIRONMENT}"  # Environment variable will be injected
+    environment: "dev"  # Replace with the actual environment or use a placeholder
 spec:
   replicas: 1
   selector:
@@ -14,7 +14,7 @@ spec:
     metadata:
       labels:
         app: gab-app
-        environment: "${ENVIRONMENT}"  # Environment variable will be injected
+        environment: "dev"  # Replace with the actual environment or use a placeholder
     spec:
       containers:
         - name: gab-app-container
@@ -23,7 +23,6 @@ spec:
             - containerPort: 80
           env:
             - name: ENVIRONMENT
-              value: "${ENVIRONMENT_LABEL}"  # Set from the pipeline
+              value: "dev"  # Replace with the actual environment or use a placeholder
       imagePullSecrets:
         - name: gab-app-secret
----

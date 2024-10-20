@@ -320,7 +320,9 @@ jobs:
         run: |
           kubectl apply -f ./kubernetes/deployment.yaml
           kubectl apply -f ./kubernetes/service.yaml
-
+        env:
+          ENVIRONMENT: ${{ env.ENVIRONMENT }} 
+          
       - name: Verify deployment.yaml changes
         run: |
           echo "Contents of deployment.yaml after update:"
