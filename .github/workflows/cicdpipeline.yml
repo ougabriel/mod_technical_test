@@ -184,7 +184,7 @@ jobs:
          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: |
         chmod +x ./kubernetes/update-k8s-yaml.sh
-        .kubernetes/update-k8s-yaml.sh \
+        ./kubernetes/update-k8s-yaml.sh \
         ${{ secrets.AWS_REGION }} \
         ${{ secrets.ECR_REPOSITORY }} \
         ./kubernetes/deployment.yaml
