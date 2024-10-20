@@ -15,5 +15,5 @@ spec:
   ports:
     - protocol: TCP
       port: 80         # External port for the service
-      targetPort: 80   # The port where the container is running
-      nodePort: 30000
+      targetPort: 3000   # The port where the container is running
+  
