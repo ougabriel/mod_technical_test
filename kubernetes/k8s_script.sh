@@ -4,13 +4,13 @@
 set -xe
 
 # Check if the required arguments are passed
-if [ "$#" -ne 4 ]; then
-  echo "Usage: $0 <deployment.yaml-path> <ECR-repository-name> <AWS-region> <image-tag>"
-  exit 1
-fi
+# if [ "$#" -ne 4 ]; then
+#   echo "Usage: $0 <deployment.yaml-path> <ECR-repository-name> <AWS-region> <image-tag>"
+#   exit 1
+# fi
 
 # Assigning arguments to variables
-DEPLOYMENT_YAML_PATH=$1
+#DEPLOYMENT_YAML_PATH=$1
 ECR_REPOSITORY_NAME=$2
 AWS_REGION=$3
 IMAGE_TAG=$4
