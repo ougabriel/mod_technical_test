@@ -3,6 +3,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: gab-app-service
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-ipv6: "false"  # Ensures IPv6 is disabled
   labels:
     app: gab-app
     environment: ""
