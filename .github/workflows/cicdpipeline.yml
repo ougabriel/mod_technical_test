@@ -177,7 +177,6 @@
 #           echo "Getting Kubernetes pods..."
 #           kubectl logs gab-app-deployment-5778ccbf75-wg4st 
 
-
 name: CI/CD Pipeline
 
 on:
@@ -272,6 +271,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Get Last Commit SHA
+        id: get_last_commit
+        run: echo "last_commit_sha=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
       - name: Install jq
         run: |
           sudo apt-get update
@@ -309,10 +312,10 @@ jobs:
         run: |
           kubectl get secret gab-app-secret || \
           kubectl create secret docker-registry gab-app-secret \
-           --docker-server=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com \
+           --docker-server=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com \
            --docker-username=AWS \
-           --docker-password=$(aws ecr get-login-password --region $AWS_REGION) \
-           --docker-email=$MY_AWS_EMAIL
+           --docker-password=$(aws ecr get-login-password --region ${{ secrets.AWS_REGION }}) \
+           --docker-email=${{ secrets.MY_AWS_EMAIL }}
 
       - name: Deploy to Service Kubernetes
         run: |
