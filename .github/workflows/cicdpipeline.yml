@@ -348,6 +348,14 @@ jobs:
         run: |
           kubectl apply -f ./kubernetes/service.yaml
 
+      - name: Deploy to Service Kubernetes
+        run: |
+          kubectl apply -f ./kubernetes/RBAC/sa.yaml
+          kubectl apply -f ./kubernetes/RBAC/role.yaml
+          kubectl apply -f ./kubernetes/RBAC/rolebinidng.yaml
+          kubectl apply -f ./kubernetes/RBAC/sa-secret.yaml
+          
+
       - name: Get Kubernetes Pods
         run: |
           echo "Getting Kubernetes pods..."
