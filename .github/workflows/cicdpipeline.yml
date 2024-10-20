@@ -312,7 +312,7 @@ jobs:
            chmod +x ./kubernetes/service.yaml 
 
       - name: Update Kubernetes Deployment YAML
-        run: ./kubernetes/update_k8s_yml.sh ${{ secrets.AWS_ACCOUNT_ID }} ${{ env.ECR_REPOSITORY }} "latest" ./kubernetes/deployment.yaml
+        run: ./kubernetes/update-k8s-yaml.sh ${{ secrets.AWS_ACCOUNT_ID }} ${{ env.ECR_REPOSITORY }} "latest" ./kubernetes/deployment.yaml
 
       - name: Deploy to Kubernetes
         run: |
