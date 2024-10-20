@@ -323,22 +323,26 @@ jobs:
       #     REGION: eu-west-2
       #     ECR_REPOSITORY: gabapprepodev    
       - name: Update Kubernetes Deployment YAML
-        run: ./kubernetes/update-k8s-yaml.sh ${{ secrets.AWS_ACCOUNT_ID }} ${{ env.ECR_REPOSITORY }} "latest" ./kubernetes/deployment.yaml
-
+        run: ./kubernetes/update-k8s-yaml.sh 
+        
       - name: Deploy to Kubernetes
         run: |
-          echo "Using image: ${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPOSITORY}:latest"
           kubectl apply -f ./kubernetes/deployment.yaml
-        env:
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-          REGION: eu-west-2
-          ECR_REPOSITORY: gabapprepodev
-
 
       - name: Verify deployment.yaml changes
         run: |
           echo "Contents of deployment.yaml after update:"
           cat ./kubernetes/deployment.yaml
+
+      - name: Create ImagePullSecret
+        run: |
+          kubectl get secret gab-app-secret || \
+          kubectl create secret docker-registry gab-app-secret \
+           --docker-server=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com \
+           --docker-username=AWS \
+           --docker-password=$(aws ecr get-login-password --region $AWS_REGION) \
+           --docker-email=$MY_AWS_EMAIL
+
 
       - name: Deploy to Service Kubernetes
         run: |
