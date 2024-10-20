@@ -66,16 +66,23 @@ jobs:
           echo "ENVIRONMENT=dev" >> $GITHUB_ENV
         fi
 
-    - name: Debug environment variables
-      run: |
-        echo "AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID"
-        echo "ECR_REPOSITORY: $ECR_REPOSITORY"
-        echo "IMAGE_TAG: $IMAGE_TAG"
-        echo "AWS_REGION: $AWS_REGION"
-
+    #  use the git commit hash for the image tag
+    # - name: Set IMAGE_TAG
+    #   run: |
+    #     IMAGE_TAG=$(git rev-parse --short HEAD)
+    #     echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
     - name: Set IMAGE_TAG to default
       run: |
        echo "IMAGE_TAG=latest" >> $GITHUB_ENV
+
+
+    # - name: Build and tag Docker image
+    #   run: |
+    #     docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG .
+
+    # - name: Push Docker image to ECR
+    #   run: |
+    #     docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
     - name: Build and tag Docker image with 'latest'
       run: |
@@ -148,7 +155,11 @@ jobs:
       run: |
         sed -i "s/environment: .*/environment: $ENVIRONMENT_LABEL/" ./kubernetes/deployment.yaml
         sed -i "s/environment: .*/environment: ${ENVIRONMENT_LABEL}/" ./kubernetes/service.yaml
-   
+    # - name: Replace placeholders in deployment.yaml
+    #   run: |
+    #     sed -i "s|IMAGE_URL|${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG|" ./kubernetes/deployment.yaml
+    #     sed -i "s|\${ENVIRONMENT}|${ENVIRONMENT}|" ./kubernetes/deployment.yaml
+  
     - name: Install AWS CLI
       run: |
         sudo apt-get install -y awscli
@@ -162,17 +173,38 @@ jobs:
         --docker-password=$(aws ecr get-login-password --region $AWS_REGION) \
         --docker-email=$MY_AWS_EMAIL
 
+    # - name: Debug sed command
+    #   run: |
+    #     echo "sed -i 's|{{IMAGE_PLACEHOLDER}}|${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}|' ./kubernetes/deployment.yaml"
+
+    # - name: Replace image placeholder in deployment.yaml
+    #   run: |
+    #       sed -i "s|{{IMAGE_PLACEHOLDER}}|${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}|" ./kubernetes/deployment.yaml
+    #   env:
+    #       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+    #       AWS_REGION: ${{ secrets.AWS_REGION }}
+    #       ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}   
+
+    
     - name: Update deployment.yaml with new ECR image
       run: |
         chmod +x ./kubernetes/k8s_script.sh
         ./kubernetes/k8s_script.sh ./kubernetes/deployment.yaml $ECR_REPOSITORY $AWS_REGION $IMAGE_TAG
-
+      env:
+        AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+        ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        IMAGE_TAG: latest
 
     - name: Deploy to Kubernetes
       run: |
         kubectl apply -f ./kubernetes/deployment.yaml
         kubectl apply -f ./kubernetes/service.yaml
 
+    # - name: Patch Deployment with new image
+    #   run: |
+    #     kubectl set image deployment/gab-app-deployment gab-app-container=${{ secrets.$AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.$AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}
+   
     - name: Get Kubernetes Nodes
       run: |
           echo "Getting Kubernetes nodes..."
@@ -192,3 +224,25 @@ jobs:
           echo "Getting Kubernetes nodes details"
           kubectl describe nodes
     
+    # - name: Get External IP
+    #   id: get_external_ip
+    #   run: |
+    #       EXTERNAL_IP=$(kubectl get svc gab-app-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+    #       echo "EXTERNAL_IP=$EXTERNAL_IP"
+    #       echo "External IP is $EXTERNAL_IP"
+
+    # - name: Resolve External IP to IPv4
+    #   id: resolve_ip
+    #   run: |
+    #       echo "Resolving external IP to IPv4..."
+    #       IPV4_ADDR=$(dig +short $EXTERNAL_IP)
+    #       if [ -z "$IPV4_ADDR" ]; then
+    #         echo "Error: Unable to resolve external IP to IPv4"
+    #         exit 1
+    #       else
+    #         echo "IPV4_ADDR=$IPV4_ADDR"
+    #         echo "Resolved IPv4 Address is $IPV4_ADDR"
+    #       fi
+
+    # - name: Output IPv4 Address
+    #   run: echo "IPv4 Address is ${{ env.IPV4_ADDR }}"
