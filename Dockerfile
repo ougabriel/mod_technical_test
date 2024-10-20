@@ -6,6 +6,12 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV FLASK_SECRET_KEY='M!technicalmod-test2024'
 
+# Install git
+RUN apt-get update && \
+    apt-get install -y git && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+    
 # Set the working directory
 WORKDIR /app
 
