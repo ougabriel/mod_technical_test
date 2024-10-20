@@ -165,7 +165,7 @@ jobs:
     - name: Update deployment.yaml with new ECR image
       run: |
         chmod +x ./kubernetes/k8s_script.sh
-        ./kubernetes/k8s_script.sh ./kubernetes/deployment.yaml $ECR_REPOSITORY $AWS_REGION $IMAGE_TAG
+        ./kubernetes/k8s_script.sh ./kubernetes/deployment.yaml $ECR_REPOSITORY ${{ secrets.AWS_REGION }} $IMAGE_TAG
 
 
     - name: Deploy to Kubernetes
@@ -173,6 +173,11 @@ jobs:
         kubectl apply -f ./kubernetes/deployment.yaml
         kubectl apply -f ./kubernetes/service.yaml
 
+    - name: Verify deployment.yaml changes
+      run: |
+        echo "Contents of deployment.yaml after update:"
+        cat ./kubernetes/deployment.yaml
+        
     - name: Get Kubernetes Nodes
       run: |
           echo "Getting Kubernetes nodes..."
