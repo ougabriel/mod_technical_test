@@ -375,3 +375,8 @@ jobs:
         run: |
           echo "Getting Kubernetes pods..."
           kubectl get nodes -o wide
+
+      - name: Get Kubernetes Nodes
+        run: |
+          echo "Getting Kubernetes pods..."
+          kubectl logs pods 
