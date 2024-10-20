@@ -19,7 +19,7 @@ spec:
       containers:
         - name: gab-app-container
           # image: "{{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.{{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${{ env.IMAGE_TAG }}"
-          image: "{{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.{{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:latest"
+          image: "{{IMAGE_PLACEHOLDER}}"
           ports:
             - containerPort: 80
           env:
