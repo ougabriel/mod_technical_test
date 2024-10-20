@@ -175,7 +175,7 @@ jobs:
 
     - name: Replace image placeholder in deployment.yaml
       run: |
-        sed -i 's|{{IMAGE_PLACEHOLDER}}|'${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${{ env.IMAGE_TAG }}'|' ./kubernetes/deployment.yaml
+         sed -i 's|{{IMAGE_PLACEHOLDER}}|'"${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}"|' ./kubernetes/deployment.yaml
     
     - name: Deploy to Kubernetes
       run: |
@@ -184,7 +184,7 @@ jobs:
 
     # - name: Patch Deployment with new image
     #   run: |
-    #     kubectl set image deployment/gab-app-deployment gab-app-container=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}
+    #     kubectl set image deployment/gab-app-deployment gab-app-container=${{ secrets.$AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.$AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}
    
     - name: Get Kubernetes Nodes
       run: |
