@@ -4,7 +4,7 @@ metadata:
   name: gab-app-deployment
   labels:
     app: gab-app
-    environment: "dev"  # Set a default value or remove this line if you want to set it in the pipeline
+    environment: "dev"  # Default value, can be set in the pipeline
 spec:
   replicas: 1
   selector:
@@ -14,15 +14,15 @@ spec:
     metadata:
       labels:
         app: gab-app
-        environment: "dev"  # Same as above
+        environment: "dev"  # Default value, can be set in the pipeline
     spec:
       containers:
         - name: gab-app-container
-          image: "${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPOSITORY}:latest"  # Use placeholders here
+          image: "${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPOSITORY}:latest"  # Placeholder for image
           ports:
             - containerPort: 80
           env:
             - name: ENVIRONMENT
-              value: "dev"  # You can replace this with a pipeline variable
+              value: "dev"  # Can be set from the pipeline
       imagePullSecrets:
         - name: gab-app-secret

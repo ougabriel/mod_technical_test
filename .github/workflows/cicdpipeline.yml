@@ -305,28 +305,32 @@ jobs:
 
       - name: Make update-k8s-yaml.sh executable
         run: chmod +x ./kubernetes/update-k8s-yaml.sh
-      
-      - name: Update deployment.yaml with new ECR image
-        run: |
-          IMAGE_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
-          sed -i "s|image: .*|image: $IMAGE_URI|" ./kubernetes/deployment.yaml
-      
+           
       - name: Make deployment scripts executable
         run: |
            chmod +x ./kubernetes/deployment.yaml
-           chmod +x ./kubernetes/service.yaml      
-      
+           chmod +x ./kubernetes/service.yaml 
+
+      - name: Update Kubernetes Deployment YAML
+        run: ./kubernetes/update_k8s_yml.sh ${{ secrets.AWS_ACCOUNT_ID }} ${{ env.ECR_REPOSITORY }} "latest" ./kubernetes/deployment.yaml
+
       - name: Deploy to Kubernetes
         run: |
+          echo "Using image: ${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPOSITORY}:latest"
           kubectl apply -f ./kubernetes/deployment.yaml
-          kubectl apply -f ./kubernetes/service.yaml
         env:
-          ENVIRONMENT: ${{ env.ENVIRONMENT }} 
-          
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          REGION: eu-west-2
+          ECR_REPOSITORY: gabapprepodev     
+
       - name: Verify deployment.yaml changes
         run: |
           echo "Contents of deployment.yaml after update:"
           cat ./kubernetes/deployment.yaml
+
+      - name: Deploy to Service Kubernetes
+        run: |
+          kubectl apply -f ./kubernetes/service.yaml
 
       - name: Get Kubernetes Pods
         run: |
