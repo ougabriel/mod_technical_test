@@ -4,7 +4,7 @@ metadata:
   name: gab-app-deployment
   labels:
     app: gab-app
-    environment: "${ENVIRONMENT}"  # Environment variable will be injected 
+    environment: "${ENVIRONMENT}"  # Environment variable will be injected
 spec:
   replicas: 1
   selector:
@@ -18,8 +18,7 @@ spec:
     spec:
       containers:
         - name: gab-app-container
-          # image: "{{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.{{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:${{ env.IMAGE_TAG }}"
-          image: "{{IMAGE_PLACEHOLDER}}"
+          image: ""  # This will be populated by the script
           ports:
             - containerPort: 80
           env:
