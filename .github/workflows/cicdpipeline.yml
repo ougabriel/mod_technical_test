@@ -323,7 +323,7 @@ jobs:
       #     REGION: eu-west-2
       #     ECR_REPOSITORY: gabapprepodev    
       - name: Update Kubernetes Deployment YAML
-        run: ./kubernetes/update-k8s_yml.sh ${{ secrets.AWS_ACCOUNT_ID }} ${{ env.ECR_REPOSITORY }} "latest" ./kubernetes/deployment.yaml
+        run: ./kubernetes/update-k8s-yaml.sh ${{ secrets.AWS_ACCOUNT_ID }} ${{ env.ECR_REPOSITORY }} "latest" ./kubernetes/deployment.yaml
 
       - name: Deploy to Kubernetes
         run: |
