@@ -172,8 +172,8 @@ jobs:
          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: |
-        chmod +x ./kubernetes/k8s-script.sh
-        ./kubernetes/k8s-script.sh \
+        chmod +x ./kubernetes/k8s_script.sh
+        ./kubernetes/k8s_script.sh \
         ${{ secrets.AWS_REGION }} \
         ${{ secrets.ECR_REPOSITORY }} \
         ${{ github.sha }} \
