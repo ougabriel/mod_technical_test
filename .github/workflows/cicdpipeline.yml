@@ -175,8 +175,12 @@ jobs:
 
     - name: Replace image placeholder in deployment.yaml
       run: |
-         sed -i 's|{{IMAGE_PLACEHOLDER}}|'"${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$ECR_REPOSITORY:${IMAGE_TAG}"|' ./kubernetes/deployment.yaml
-    
+          sed -i 's|{{IMAGE_PLACEHOLDER}}|'"${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}"|' ./kubernetes/deployment.yaml
+      env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}   
+           
     - name: Deploy to Kubernetes
       run: |
         kubectl apply -f ./kubernetes/deployment.yaml
