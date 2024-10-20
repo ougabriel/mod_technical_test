@@ -324,7 +324,7 @@ jobs:
       #     ECR_REPOSITORY: gabapprepodev    
       - name: Update Kubernetes Deployment YAML
         run: ./kubernetes/update-k8s-yaml.sh 
-        
+
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f ./kubernetes/deployment.yaml
@@ -352,6 +352,11 @@ jobs:
         run: |
           echo "Getting Kubernetes pods..."
           kubectl get pods -o wide
+
+      - name: Get Kubernetes Service
+        run: |
+          echo "Getting Kubernetes pods..."
+          kubectl get svc
 
       - name: Describe Kubernetes Pods
         run: |
