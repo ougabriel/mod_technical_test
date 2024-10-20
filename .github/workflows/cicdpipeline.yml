@@ -379,4 +379,4 @@ jobs:
       - name: Get Kubernetes Nodes
         run: |
           echo "Getting Kubernetes pods..."
-          kubectl logs pods 
+          kubectl logs gab-app-deployment-5778ccbf75-wg4st 
