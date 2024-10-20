@@ -190,7 +190,12 @@ jobs:
     - name: Get Kubernetes Pods
       run: |
           echo "Getting Kubernetes pods..."
-          kubectl get pods -o wide --all-namespaces   
+          kubectl get pods -o wide
+    - name: Get Kubernetes Pods
+      run: |
+          echo "Getting Kubernetes pods..."
+          kubectl describe pods
+     
     - name: Describe Kubernetes Nodes
       run: | 
           echo "Getting Kubernetes nodes details"
