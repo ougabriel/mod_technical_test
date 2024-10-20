@@ -24,4 +24,6 @@ spec:
           env:
             - name: ENVIRONMENT
               value: "${ENVIRONMENT_LABEL}"  # Set from the pipeline
+      imagePullSecrets:
+        - name: gab-app-secret
 ---

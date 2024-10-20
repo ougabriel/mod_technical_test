@@ -146,6 +146,18 @@ jobs:
     #     sed -i "s|IMAGE_URL|${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG|" ./kubernetes/deployment.yaml
     #     sed -i "s|\${ENVIRONMENT}|${ENVIRONMENT}|" ./kubernetes/deployment.yaml
   
+    - name: Install AWS CLI
+      run: |
+        sudo apt-get install -y awscli
+
+    - name: Create ImagePullSecret
+      run: |
+        kubectl create secret docker-registry gab-app-secret \
+        --docker-server=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com \
+        --docker-username=AWS \
+        --docker-password=$(aws ecr get-login-password --region $AWS_REGION) \
+        --docker-email=$MY_AWS_EMAIL
+
     - name: Deploy to Kubernetes
       run: |
         kubectl apply -f ./kubernetes/deployment.yaml
