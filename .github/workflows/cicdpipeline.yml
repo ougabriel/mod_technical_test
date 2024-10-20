@@ -188,7 +188,7 @@ jobs:
     
     - name: Update deployment.yaml with new ECR image
       run: |
-        chmod +x ./scripts/update-deployment.sh
+        chmod +x ./kubernetes/k8s_script.sh
         ./kubernetes/k8s_script.sh ./kubernetes/deployment.yaml $ECR_REPOSITORY $AWS_REGION $IMAGE_TAG
       env:
         AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
