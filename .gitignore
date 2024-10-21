@@ -10,6 +10,7 @@ terraform/terraform-provider-aws*.exe
 terraform/terraform-provider-*.exe
 # Ignore Terraform provider binaries
 terraform/.terraform/providers/terraform-provider-aws_*.exe
+#git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch terraform/terraform-provider-aws_v5.72.1_x5.exe' --prune-empty --tag-name-filter cat -- --all
 
 # Ignore Ansible virtual environment folder
 ansible-venv/
