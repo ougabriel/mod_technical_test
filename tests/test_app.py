@@ -21,7 +21,7 @@ class FlaskAppTests(unittest.TestCase):
         response = self.app.get('/healthcheck')
         self.assertEqual(response.status_code, 200)
         json_data = response.get_json()
-        self.assertEqual(json_data['description'], "A simple login application.")
+        self.assertEqual(json_data['description'], "Gabriel Okom's pre-interview technical test.")
         self.assertEqual(json_data['version'], "1.0")
         self.assertIsInstance(json_data['last_commit_sha'], str)  # it's a string
 
