@@ -26,7 +26,7 @@ resource "aws_s3_bucket" "terraform_state_bucket" {
 
 terraform {
   backend "s3" {
-    bucket = "gab-terraform-state-bucket-dev"  # actual bucket name
+    bucket = "gab-terraform-state-bucket-dev"  ## actual bucket name
     key    = "terraform/state/default.tfstate"
     region = "eu-west-2"
   }
