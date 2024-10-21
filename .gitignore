@@ -6,6 +6,8 @@ terraform.tfstate.d
 terraform.tfstate.backup
 terraform/.terraform/providers/**
 terraform/terraform-provider-aws_v5.72.1_x5.exe
+terraform/terraform-provider-aws*.exe
+terraform/terraform-provider-*.exe
 
 # Ignore Ansible virtual environment folder
 ansible-venv/
