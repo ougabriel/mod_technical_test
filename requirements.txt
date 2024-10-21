@@ -2,3 +2,5 @@ Flask>=2.3.3
 Werkzeug>=2.3.4
 Flask-WTF>=1.0.1
 WTForms>=2.3.3
+pytest>=7.0.0          
+flake8>=5.0.0        

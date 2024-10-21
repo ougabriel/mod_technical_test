@@ -2,134 +2,124 @@ provider "aws" {
   region = "eu-west-2"
 }
 
-resource "aws_vpc" "gab_vpc" {
-  cidr_block = "10.0.0.0/16"
+# Select the workspace (dev, prod, stage)
+terraform {
+  required_version = ">= 0.12"
+}
+
+# Create an S3 bucket for the Terraform state file
+resource "aws_s3_bucket" "terraform_state_bucket" {
+  bucket = "gab-terraform-state-bucket-${terraform.workspace}"
+  acl    = "private"
+
+  versioning {
+    enabled = true
+  }
 
   tags = {
-    Name = "gab-vpc"
+    Name = "terraform-state-bucket-${terraform.workspace}"
+  }
+   lifecycle {
+    prevent_destroy = false
   }
 }
 
-resource "aws_subnet" "gab_subnet" {
-  count = 2
-  vpc_id                  = aws_vpc.gab_vpc.id
-  cidr_block              = cidrsubnet(aws_vpc.gab_vpc.cidr_block, 8, count.index)
-  availability_zone       = element(["eu-west-2a", "eu-west-2c"], count.index)
+terraform {
+  backend "s3" {
+    bucket = "gab-terraform-state-bucket-dev"  ## actual bucket name
+    key    = "terraform/state/default.tfstate"
+    region = "eu-west-2"
+  }
+}
+
+# Create a VPC for EKS and EC2 instances
+resource "aws_vpc" "main" {
+  cidr_block = var.vpc_cidr_block
+
+  tags = {
+    Name = "vpc-${terraform.workspace}"
+  }
+}
+
+resource "aws_subnet" "main" {
+  count                   = 2
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "gab-subnet-${count.index}"
+    Name = "subnet-${count.index}-${terraform.workspace}"
   }
 }
 
-resource "aws_internet_gateway" "gab_igw" {
-  vpc_id = aws_vpc.gab_vpc.id
+data "aws_availability_zones" "available" {}
+
+# Create an Internet Gateway
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "gab-igw"
+    Name = "igw-${terraform.workspace}"
   }
 }
 
-resource "aws_route_table" "gab_route_table" {
-  vpc_id = aws_vpc.gab_vpc.id
+# Create Route Table
+resource "aws_route_table" "main" {
+  vpc_id = aws_vpc.main.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.gab_igw.id
+    gateway_id = aws_internet_gateway.main.id
   }
 
   tags = {
-    Name = "gab-route-table"
+    Name = "route-table-${terraform.workspace}"
   }
 }
 
-resource "aws_route_table_association" "a" {
+# Associate Route Table to Subnets
+resource "aws_route_table_association" "main" {
   count          = 2
-  subnet_id      = aws_subnet.gab_subnet[count.index].id
-  route_table_id = aws_route_table.gab_route_table.id
+  subnet_id      = aws_subnet.main[count.index].id
+  route_table_id = aws_route_table.main.id
 }
 
-resource "aws_security_group" "gab_cluster_sg" {
-  vpc_id = aws_vpc.gab_vpc.id
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "gab-cluster-sg"
-  }
-}
-
-resource "aws_security_group" "gab_node_sg" {
-  vpc_id = aws_vpc.gab_vpc.id
-
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "gab-node-sg"
-  }
-}
-
-# Create ECR repository for storing Docker images
-resource "aws_ecr_repository" "gab_app_repo" {
-  name                 = "gab-app-repo"
-  image_tag_mutability = "MUTABLE"
-  force_delete         = true  # Ensures ECR repository is deleted on terraform destroy
-
-  tags = {
-    Name = "gab-app-repo"
-  }
-}
-
-resource "aws_eks_cluster" "gab" {
-  name     = "gab-cluster"
-  role_arn = aws_iam_role.gab_cluster_role.arn
+# EKS Cluster
+resource "aws_eks_cluster" "eks_cluster" {
+  name     = "eks-cluster-${terraform.workspace}"
+  role_arn = aws_iam_role.eks_cluster_role.arn
 
   vpc_config {
-    subnet_ids         = aws_subnet.gab_subnet[*].id
-    security_group_ids = [aws_security_group.gab_cluster_sg.id]
+    subnet_ids         = aws_subnet.main[*].id
+    security_group_ids = [aws_security_group.eks_cluster_sg.id]
   }
 }
 
-resource "aws_eks_node_group" "gab" {
-  cluster_name    = aws_eks_cluster.gab.name
-  node_group_name = "gab-node-group"
-  node_role_arn   = aws_iam_role.gab_node_group_role.arn
-  subnet_ids      = aws_subnet.gab_subnet[*].id
+# EKS Node Group
+resource "aws_eks_node_group" "eks_node_group" {
+  cluster_name    = aws_eks_cluster.eks_cluster.name
+  node_group_name = "eks-node-group-${terraform.workspace}"
+  node_role_arn   = aws_iam_role.eks_node_group_role.arn
+  subnet_ids      = aws_subnet.main[*].id
 
   scaling_config {
-    desired_size = 3
-    max_size     = 3
-    min_size     = 3
+    desired_size = 1
+    max_size     = 1
+    min_size     = 1
   }
 
-  instance_types = ["t2.large"]
+  instance_types = ["t2.medium"]
 
   remote_access {
     ec2_ssh_key = var.ssh_key_name
-    source_security_group_ids = [aws_security_group.gab_node_sg.id]
+    source_security_group_ids = [aws_security_group.eks_node_sg.id]
   }
 }
 
-# IAM Role for the EKS Cluster
-resource "aws_iam_role" "gab_cluster_role" {
-  name = "gab-cluster-role"
+# IAM Role for EKS Cluster
+resource "aws_iam_role" "eks_cluster_role" {
+  name = "eks-cluster-role-${terraform.workspace}"
 
   assume_role_policy = <<EOF
 {
@@ -147,14 +137,14 @@ resource "aws_iam_role" "gab_cluster_role" {
 EOF
 }
 
-resource "aws_iam_role_policy_attachment" "gab_cluster_role_policy" {
-  role       = aws_iam_role.gab_cluster_role.name
+resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
+  role       = aws_iam_role.eks_cluster_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
-# IAM Role for EKS Nodes
-resource "aws_iam_role" "gab_node_group_role" {
-  name = "gab-node-group-role"
+# IAM Role for EKS Node Group
+resource "aws_iam_role" "eks_node_group_role" {
+  name = "eks-node-group-role-${terraform.workspace}"
 
   assume_role_policy = <<EOF
 {
@@ -172,19 +162,79 @@ resource "aws_iam_role" "gab_node_group_role" {
 EOF
 }
 
-resource "aws_iam_role_policy_attachment" "gab_node_group_role_policy" {
-  role       = aws_iam_role.gab_node_group_role.name
+resource "aws_iam_role_policy_attachment" "eks_node_group_policy" {
+  role       = aws_iam_role.eks_node_group_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
 
-resource "aws_iam_role_policy_attachment" "gab_node_group_cni_policy" {
-  role       = aws_iam_role.gab_node_group_role.name
+resource "aws_iam_role_policy_attachment" "ecr_read_only" {
+  role       = aws_iam_role.eks_node_group_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+resource "aws_iam_role_policy_attachment" "cni_policy" {
+  role       = aws_iam_role.eks_node_group_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
-# Add permissions for the node group to pull images from ECR
-resource "aws_iam_role_policy_attachment" "gab_node_group_ecr_policy" {
-  role       = aws_iam_role.gab_node_group_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+resource "aws_security_group" "eks_cluster_sg" {
+  vpc_id = aws_vpc.main.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "eks-cluster-sg-${terraform.workspace}"
+  }
+}
+
+resource "aws_security_group" "eks_node_sg" {
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "eks-node-sg-${terraform.workspace}"
+  }
+}
+
+# AWS ECR Repository for Docker images
+resource "aws_ecr_repository" "app_repo" {
+  name                 = "gabapprepo${terraform.workspace}"
+  image_tag_mutability = "MUTABLE"
+  force_delete         = true
+
+  tags = {
+    Name = "app-repo-${terraform.workspace}"
+  }
+}
+# EC2 instance configuration
+resource "aws_instance" "ubuntu_instance" {
+  ami           = "ami-0e8d228ad90af673b"
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.main[0].id  # Subnets
+  
+  tags = {
+    Name = "gab-ec2-${terraform.workspace}"
+  }
+  
+  # security group with this instance
+  vpc_security_group_ids = [aws_security_group.eks_node_sg.id]
 }
 
