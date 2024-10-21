@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
 
 APP_VERSION = "1.0"
-APP_DESCRIPTION = "A simple login application."
+APP_DESCRIPTION = "Gabriel Okom's pre-interview technical test."
 
 
 def get_last_commit_sha():
