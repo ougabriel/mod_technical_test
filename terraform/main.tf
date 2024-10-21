@@ -216,7 +216,7 @@ resource "aws_security_group" "eks_node_sg" {
 
 # AWS ECR Repository for Docker images
 resource "aws_ecr_repository" "app_repo" {
-  name                 = "gabapprepo${terraform.workspace}"
+  name                 = "repo${terraform.workspace}"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
 
