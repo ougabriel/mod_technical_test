@@ -24,13 +24,13 @@ resource "aws_s3_bucket" "terraform_state_bucket" {
   }
 }
 
-# terraform {
-#   backend "s3" {
-#     bucket = "gab-terraform-state-bucket-dev"  ## actual bucket name
-#     key    = "terraform/state/default.tfstate"
-#     region = "eu-west-2"
-#   }
-# }
+terraform {
+  backend "s3" {
+    bucket = "gab-terraform-state-bucket-dev"  ## actual bucket name
+    key    = "terraform/state/default.tfstate"
+    region = "eu-west-2"
+  }
+}
 
 # Create a VPC for EKS and EC2 instances
 resource "aws_vpc" "main" {
