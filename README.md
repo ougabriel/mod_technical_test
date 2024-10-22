@@ -1,243 +1,185 @@
-<<<<<<< HEAD
-# mod-technical-test
-```
-├── app/                               # Flask application code
-│   ├── __init__.py                    # App initialization code
-│   ├── app.py                         # Main entry point of the Flask app
-│   ├── templates/                     # HTML templates for Flask (if using Jinja2)
-│   ├── static/                        # Static files (CSS, JS, images)
-│   ├── forms.py                       # Flask-WTF form definitions
-│   ├── models.py                      # Database models (if any)
-│   ├── requirements.txt               # Python dependencies
-│   └── Dockerfile                     # Dockerfile to build the Flask app
-│
-├── terraform/                         # Terraform configuration
-│   ├── main.tf                        # Main Terraform config file
-│   ├── variables.tf                   # Terraform variables
-│   ├── outputs.tf                     # Terraform outputs
-│   ├── eks.tf                         # Terraform config for EKS cluster
-│   ├── vpc.tf                         # Terraform config for VPC
-│   ├── security.tf                    # Security group, IAM roles, and policies
-│   ├── modules/                       # Reusable Terraform modules
-│   │   └── eks-cluster/               # EKS cluster module
-│   │       ├── main.tf                # EKS module main config
-│   │       ├── variables.tf           # EKS module variables
-│   │       ├── outputs.tf             # EKS module outputs
-│   └── k8s/                           # Kubernetes resource definitions
-│       ├── deployment.yaml            # Kubernetes Deployment for Flask app
-│       └── service.yaml               # Kubernetes Service (LoadBalancer)
-│
-├── .github/                           # GitHub-related files
-│   └── workflows/                     # GitHub Actions workflows
-│       └── ci-cd.yaml                 # CI/CD pipeline for automated build, test, and deploy
-│
-├── k8s-deployment.yaml                # Kubernetes deployment file (optional)
-├── k8s-service.yaml                   # Kubernetes service file (optional)
-├── README.md                          # Documentation
-└── .gitignore                         # Git ignore file
+# Technical Test: CI/CD Pipeline with Docker, ECR, Kubernetes, and GitHub Actions
 
-```
+## Challenge
+The following test outlines the creation of a CI/CD pipeline for a Dockerized application deployed to AWS using **GitHub Actions**, **Amazon Elastic Container Registry (ECR)**, and **Kubernetes**. 
 
-Sure! Below is a step-by-step guide to create a simple Python application that meets the requirements outlined in your challenge. We'll use the **Flask** framework to create a web application with a `/healthcheck` endpoint that returns application metadata in JSON format.
+The test requirements are:
+- Create a simple, containerized application with a `/healthcheck` endpoint.
+- Implement a CI pipeline that handles:
+  - Building and testing the application.
+  - Pushing the container to ECR.
+  - Deploying the application to an AWS Kubernetes cluster.
+- The pipeline should trigger upon new code commits and manage different environments (development and production) based on the branch (`dev` or `main`).
 
-### Step 1: Setting Up the Project Structure
+The application for this example is built using **Python**.
 
-Create a directory for your project. Inside this directory, you will create the necessary files.
+The key elements implemented:
+- **Healthcheck endpoint** returning application details in JSON format.
+  - Application Version.
+  - Description (static variable).
+  - Last Commit SHA.
 
-```bash
-mkdir healthcheck-app
-cd healthcheck-app
-```
-
-### Step 2: Create the Python Application
-
-Create a file named `app.py` in the `healthcheck-app` directory with the following code:
-
-```python
-# app.py
-
-from flask import Flask, jsonify
-import os
-import subprocess
-
-app = Flask(__name__)
-
-# Static information about the application
-APP_VERSION = "1.0"
-APP_DESCRIPTION = "Simple Health Check Application"
-
-def get_last_commit_sha():
-    """Get the last commit SHA from Git."""
-    try:
-        return subprocess.check_output(
-            ["git", "rev-parse", "HEAD"]
-        ).strip().decode('utf-8')
-    except Exception as e:
-        return str(e)
-
-@app.route('/healthcheck', methods=['GET'])
-def healthcheck():
-    """Health check endpoint."""
-    last_commit_sha = get_last_commit_sha()
-    
-    # Construct response
-    response = {
-        "myapplication": [
-            {
-                "version": APP_VERSION,
-                "description": APP_DESCRIPTION,
-                "lastcommitsha": last_commit_sha
-            }
-        ]
-    }
-    
-    return jsonify(response)
-
-if __name__ == '__main__':
-    # Run the application
-    port = os.getenv("APP_PORT", 10000)  # Default to port 10000 if not set
-    app.run(host='0.0.0.0', port=port)
-```
-
-### Step 3: Requirements File
-
-Create a `requirements.txt` file in the same directory to specify the dependencies:
-
-```
-flask
-```
-
-### Step 4: Containerize the Application
-
-Next, create a `Dockerfile` in the same directory to containerize your application:
-
-```dockerfile
-# Dockerfile
-
-# Use the official Python image from the Docker Hub
-FROM python:3.10-slim
-
-# Set the working directory
-WORKDIR /app
-
-# Copy the requirements file and install dependencies
-COPY requirements.txt requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the application code to the container
-COPY app.py .
-
-# Expose the port the app runs on
-EXPOSE 10000
-
-# Command to run the application
-CMD ["python", "app.py"]
-```
-
-### Step 5: Build the Docker Image
-
-To build the Docker image, run the following command in your terminal from the project directory:
-
-```bash
-docker build -t healthcheck-app .
-```
-
-### Step 6: Run the Docker Container
-
-After building the image, you can run the container:
-
-```bash
-docker run -d -p 10000:10000 healthcheck-app
-```
-
-### Step 7: Test the Health Check Endpoint
-
-To test the `/healthcheck` endpoint, you can use `curl` or a web browser:
-
-```bash
-curl http://localhost:10000/healthcheck
-```
-
-You should see a response similar to:
-
+### API Example Response
 ```json
 {
     "myapplication": [
         {
             "version": "1.0",
-            "description": "Simple Health Check Application",
-            "lastcommitsha": "abc57858585"  // This will show your last commit SHA
+            "description" : "Gabriel Okom's pipeline test",
+            "lastcommitsha": "abc57858585"
         }
     ]
 }
 ```
 
-### Step 8: Create a CI Pipeline
+Additional goals:
+- Set up a CI pipeline with **GitHub Actions** that builds, tests, and deploys the application.
+- Include unit tests and security checks.
+- Write clear documentation to describe setup, usage, and risks.
 
-To create a simple CI pipeline, we'll use GitHub Actions. Create a directory named `.github/workflows` in your project directory and create a file named `ci.yml` inside it:
+---
+
+## Solution Overview
+
+This solution provides a CI/CD pipeline for a containerized Python application. The pipeline performs the following tasks:
+- Build and test the application.
+- Push the Docker image to AWS ECR.
+- Deploy the application to an AWS-managed Kubernetes cluster (EKS).
+
+---
+
+## Example Solution
+
+### Prerequisites
+To use this solution, the following are required:
+1. **AWS Account**: With permissions for ECR and EKS.
+2. **GitHub Repository**: Fork or clone the repository to your own GitHub account.
+3. **AWS CLI**: Ensure that AWS CLI is configured on your local machine.
+4. **Kubectl**: Install `kubectl` to interact with Kubernetes.
+
+#### Setup AWS Resources
+Set up your AWS environment with ECR and Kubernetes:
+
+1. **Authenticate AWS CLI**:
+   ```bash
+   aws configure
+   aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.<your-region>.amazonaws.com
+   ```
+
+2. **Create ECR Repository**:
+   ```bash
+   aws ecr create-repository --repository-name <your-repo-name>
+   ```
+
+3. **Create EKS Cluster**:
+   ```bash
+   eksctl create cluster --name my-cluster --region <your-region> --nodes 2 --node-type t2.micro
+   ```
+
+---
+
+### Local Build
+
+A bash script (`build-gab-app.local.sh`) is provided to build the Docker container locally and run tests. It uses `pytest` for unit tests, which will automatically run during the Docker build process.
+
+To build the application locally:
+```bash
+./gab-app.sh
+```
+
+
+Test the healthcheck endpoint:
+```bash
+curl http://localhost:8080/healthcheck
+{
+    "myapplication": [
+        {
+            "version": "local-docker",
+            "description": "CI/CD pipeline test",
+            "lastcommitsha": "31747bf46587c63040e085b2a854ad9c1a38074d"
+        }
+    ]
+}
+```
+
+---
+
+### CI/CD Pipeline
+
+The pipeline uses **GitHub Actions** to build, test, and deploy the application automatically. The workflow is defined in the `ci.yml` file, which performs the following steps:
+- **Build and Test**: The pipeline builds the Docker image and runs the unit tests.
+- **Push to ECR**: The Docker image is pushed to the appropriate ECR repository.
+- **Deploy to Kubernetes**: The application is deployed to an EKS cluster with a rolling update strategy.
+
+#### Pipeline Workflow
+1. **Trigger**: The pipeline triggers when new code is pushed to the `dev` or `main` branch.
+2. **Build and Test**: 
+   - Run unit tests using `pytest`.
+   - Lint the code with `flake8`.
+3. **Build Docker Image**:
+   - Build the Docker image and tag it with the latest commit SHA.
+4. **Push to ECR**: Push the Docker image to AWS ECR.
+5. **Kubernetes Deployment**: Update the Kubernetes deployment to use the new Docker image.
 
 ```yaml
-# .github/workflows/ci.yml
+# Example steps in the pipeline (ci.yml)
+- name: Build and tag Docker image
+  run: docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }} .
 
-name: CI
+- name: Push Docker image to ECR
+  run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
 
-on:
-  push:
-    branches:
-      - main  # Change this to your default branch
-  pull_request:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'
-
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-
-    - name: Run tests
-      run: |
-        # Add commands to run your tests here, e.g.:
-        echo "No tests available"
-
-    - name: Build Docker image
-      run: |
-        docker build -t healthcheck-app .
-
-    - name: Run Docker container
-      run: |
-        docker run -d -p 10000:10000 healthcheck-app
+- name: Deploy to Kubernetes
+  run: kubectl set image deployment/myapp myapp=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
 ```
 
-### Step 9: Commit and Push Your Code
+### Kubernetes Configuration
 
-Now, commit your code and push it to your GitHub repository. Make sure to replace `<your-repo-url>` with your actual repository URL.
+The Kubernetes deployment and service files (`kubernetes/deployment.yaml`) configure the application to be deployed in the cluster. A rolling update strategy is used to ensure zero downtime during deployment.
+
+```yaml
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: myapp
+        image: <aws-account-id>.dkr.ecr.<region>.amazonaws.com/<repository-name>:latest
+        ports:
+        - containerPort: 8080
+```
+
+---
+
+### Known Risks
+- **AWS Dependencies**: The pipeline heavily relies on AWS services like ECR and EKS, making it less portable.
+- **Branch Restrictions**: Only `dev` and `main` branches trigger builds and deployments.
+- **Kubernetes Availability**: The cluster is assumed to be in a healthy state. The pipeline does not check for Kubernetes cluster health before deploying.
+
+---
+
+### API Example
+Once deployed, the application can be accessed through a load balancer created by Kubernetes. The healthcheck endpoint will return information about the application, including the latest commit SHA.
 
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin <your-repo-url>
-git push -u origin main
+curl http://<load-balancer-ip>/healthcheck
 ```
 
-### Conclusion
+---
 
-Now you have a simple Python application with the following capabilities:
-- A `/healthcheck` endpoint that returns application metadata in JSON format.
-- The application is containerized with Docker.
-- A CI pipeline using GitHub Actions that builds the Docker image on each push to the repository.
+### Branching Strategy
+- **dev branch**: Used for development and testing environments.
+- **main branch**: Used for production deployments.
+- Feature branches can be merged into `dev` via pull requests. Deployments to production are done by merging `dev` into `main`.
 
-Feel free to expand this application by adding tests, logging, and more advanced error handling as needed!
-=======
-# mod-technical_test
->>>>>>> 6856485da75b329e8b5e1fecd8d25b365b6cdf80
