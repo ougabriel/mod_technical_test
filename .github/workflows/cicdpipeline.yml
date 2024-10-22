@@ -28,6 +28,7 @@ jobs:
           python -m venv venv
           venv/bin/pip install -r requirements.txt
           venv/bin/pip install pytest flake8 bandit safety
+          pip install --upgrade jinja2
 
       - name: Run Unit Tests
         run: |
