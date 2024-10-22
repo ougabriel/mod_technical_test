@@ -1,14 +1,14 @@
-# Technical Test: CI/CD Pipeline with Docker, ECR, Kubernetes, and GitHub Actions
+# Technical Test: CI/CD Pipeline with Docker, ECR, Kubernetes, Terraform, and GitHub Actions
 
 ## Challenge
-The following test outlines the creation of a CI/CD pipeline for a Dockerized application deployed to AWS using **GitHub Actions**, **Amazon Elastic Container Registry (ECR)**, and **Kubernetes**. 
+The following test outlines the creation of a CI/CD pipeline for a Dockerized application deployed to AWS using **GitHub Actions**, **Amazon Elastic Container Registry (ECR)**, **Terraform** and **Kubernetes**. 
 
 The test requirements are:
-- Create a simple, containerized application with a `/healthcheck` endpoint.
+- Created a simple, containerized application with a `/healthcheck` endpoint.
 - Implement a CI pipeline that handles:
   - Building and testing the application.
   - Pushing the container to ECR.
-  - Deploying the application to an AWS Kubernetes cluster.
+  - Deploying the application to an AWS Kubernetes cluster. (EKS cluster will be provisioned using terraform)
 - The pipeline should trigger upon new code commits and manage different environments (development and production) based on the branch (`dev` or `main`).
 
 The application for this example is built using **Python**.
@@ -44,7 +44,8 @@ Additional goals:
 This solution provides a CI/CD pipeline for a containerized Python application. The pipeline performs the following tasks:
 - Build and test the application.
 - Push the Docker image to AWS ECR.
-- Deploy the application to an AWS-managed Kubernetes cluster (EKS).
+- Deploy the application to an AWS-managed Kubernetes cluster (EKS) using Terraform
+- Perform security checks and generate a risk report
 
 ---
 
@@ -56,6 +57,7 @@ To use this solution, the following are required:
 2. **GitHub Repository**: Fork or clone the repository to your own GitHub account.
 3. **AWS CLI**: Ensure that AWS CLI is configured on your local machine.
 4. **Kubectl**: Install `kubectl` to interact with Kubernetes.
+5. **Terraform**: Use Terraform to provision AWS infrastructure.
 
 #### Setup AWS Resources
 Set up your AWS environment with ECR and Kubernetes:
@@ -73,7 +75,8 @@ Set up your AWS environment with ECR and Kubernetes:
 
 3. **Create EKS Cluster**:
    ```bash
-   eksctl create cluster --name my-cluster --region <your-region> --nodes 2 --node-type t2.micro
+   Terraform init
+   terraform apply
    ```
 
 ---
@@ -95,7 +98,7 @@ curl http://localhost:8080/healthcheck
     "myapplication": [
         {
             "version": "local-docker",
-            "description": "CI/CD pipeline test",
+            "description": "Gabriel Okom's technical pipeline test",
             "lastcommitsha": "31747bf46587c63040e085b2a854ad9c1a38074d"
         }
     ]
@@ -113,9 +116,13 @@ The pipeline uses **GitHub Actions** to build, test, and deploy the application 
 
 #### Pipeline Workflow
 1. **Trigger**: The pipeline triggers when new code is pushed to the `dev` or `main` branch.
-2. **Build and Test**: 
+2. **Build, Security and Test**: 
    - Run unit tests using `pytest`.
    - Lint the code with `flake8`.
+**Security Check Tools:**
+- Bandit: Python static analysis tool to find common security issues.
+- Safety: Scans Python dependencies for known vulnerabilities.
+- Trivy: Container vulnerability scanning tool
 3. **Build Docker Image**:
    - Build the Docker image and tag it with the latest commit SHA.
 4. **Push to ECR**: Push the Docker image to AWS ECR.
@@ -166,6 +173,11 @@ spec:
 - **AWS Dependencies**: The pipeline heavily relies on AWS services like ECR and EKS, making it less portable.
 - **Branch Restrictions**: Only `dev` and `main` branches trigger builds and deployments.
 - **Kubernetes Availability**: The cluster is assumed to be in a healthy state. The pipeline does not check for Kubernetes cluster health before deploying.
+
+**Risk Report Summary:**
+- Dependency Vulnerabilities: Identifies issues in third-party libraries.
+- Docker Image Security: Checks for critical vulnerabilities in Docker images.
+- Application Security: Detects common Python security flaws (e.g., hardcoded credentials).
 
 ---
 
