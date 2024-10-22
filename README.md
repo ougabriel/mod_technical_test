@@ -5,9 +5,9 @@ The following test outlines the creation of a CI/CD pipeline for a Dockerized ap
 
 The test requirements are:
 - Created a simple, containerized application with a `/healthcheck` endpoint.
-- Implement a CI pipeline that handles:
-  - Building and testing the application.
-  - Pushing the container to ECR.
+- Implemented a CI pipeline that handles:
+  - Built and tested the application.
+  - Pushed the container to ECR.
   - Deploying the application to an AWS Kubernetes cluster. (EKS cluster will be provisioned using terraform)
 - The pipeline should trigger upon new code commits and manage different environments (development and production) based on the branch (`dev` or `main`).
 
