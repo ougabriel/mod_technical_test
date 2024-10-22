@@ -37,6 +37,16 @@ jobs:
         run: |
           venv/bin/python -m flake8 .
 
+     # Security Check - Static Code Analysis  
+      - name: Run Bandit Security Check
+        run: |
+          venv/bin/bandit -r 
+      
+      # Security Check - Dependency Vulnerability Scanning
+      - name: Run Safety Check for Vulnerabilities
+        run: |
+          venv/bin/safety check
+
   build_and_push_docker_image:
     needs: build_and_test
     runs-on: ubuntu-latest
@@ -72,6 +82,12 @@ jobs:
       - name: Build and tag Docker image
         run: |
           docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:latest .
+    
+      # Security Check - Container Vulnerability Scan
+      - name: Run Trivy Image Scan
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest \
+          image --severity HIGH,CRITICAL ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:latest
 
       - name: Push Docker image to ECR
         run: |
