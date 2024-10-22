@@ -27,7 +27,8 @@ jobs:
         run: |
           python -m venv venv
           venv/bin/pip install -r requirements.txt
-          venv/bin/pip install pytest flake8
+          venv/bin/pip install pytest flake8 bandit safety
+          pip install --upgrade jinja2
 
       - name: Run Unit Tests
         run: |
@@ -36,6 +37,18 @@ jobs:
       - name: Lint Test with Flake8
         run: |
           venv/bin/python -m flake8 .
+
+     # Security Check - Static Code Analysis  
+      - name: Run Bandit Security Check
+        run: |
+          source venv/bin/activate
+          bandit -r . --exclude venv || true
+      
+      # Security Check - Dependency Vulnerability Scanning (ignore jinja vuln)
+      - name: Run Safety Check for Vulnerabilities
+        run: |
+          source venv/bin/activate
+          safety check --ignore=70612 
 
   build_and_push_docker_image:
     needs: build_and_test
@@ -72,6 +85,12 @@ jobs:
       - name: Build and tag Docker image
         run: |
           docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:latest .
+    
+      # Security Check - Container Vulnerability Scan
+      - name: Run Trivy Image Scan
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest \
+          image --severity HIGH,CRITICAL ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:latest
 
       - name: Push Docker image to ECR
         run: |
