@@ -40,12 +40,14 @@ jobs:
      # Security Check - Static Code Analysis  
       - name: Run Bandit Security Check
         run: |
-          venv/bin/bandit -r 
+          source venv/bin/activate
+          bandit -r . 
       
       # Security Check - Dependency Vulnerability Scanning
       - name: Run Safety Check for Vulnerabilities
         run: |
-          venv/bin/safety check
+          source venv/bin/activate
+          safety check
 
   build_and_push_docker_image:
     needs: build_and_test
