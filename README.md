@@ -1,5 +1,5 @@
 # Technical Test: CI/CD Pipeline with Docker, ECR, Kubernetes, Terraform, and GitHub Actions
-
+![alt text](<Untitled design (5).gif>)
 ## Challenge
 The following test outlines the creation of a CI/CD pipeline for a Dockerized application deployed to AWS using **GitHub Actions**, **Amazon Elastic Container Registry (ECR)**, **Terraform** and **Kubernetes**. 
 
