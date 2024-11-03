@@ -4,7 +4,7 @@
 
 # # Constants
 # DEPLOYMENT_FILE="./kubernetes/deployment.yaml"
-# ECR_IMAGE="019485243761.dkr.ecr.eu-west-2.amazonaws.com/gabapprepodev:latest"
+# ECR_IMAGE="$AWS_ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com/gabapprepodev:latest"
 
 # # Check if the deployment file exists
 # if [[ ! -f "$DEPLOYMENT_FILE" ]]; then
