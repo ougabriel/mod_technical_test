@@ -95,18 +95,7 @@ To build the application locally:
 
 
 Test the healthcheck endpoint:
-```bash
-curl http://localhost:8080/healthcheck
-{
-    "myapplication": [
-        {
-            "version": "local-docker",
-            "description": "Gabriel Okom's technical pipeline test",
-            "lastcommitsha": "31747bf46587c63040e085b2a854ad9c1a38074d"
-        }
-    ]
-}
-```
+
 ![image](https://github.com/user-attachments/assets/53eaa224-9e19-4624-ad54-c9820897f2b2)
 
 ---
