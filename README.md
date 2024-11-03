@@ -189,3 +189,14 @@ curl http://<load-balancer-ip>/healthcheck
 - **main branch**: Used for production deployments.
 - Feature branches can be merged into `dev` via pull requests. Deployments to production are done by merging `dev` into `main`.
 
+---
+
+## Demonstration
+
+For a live demonstration of the project, you can view the deployment in action at [[CHECK THE BLOG HERE](https://ougabriel.medium.com/ci-cd-project-deploy-a-python-app-with-docker-ecr-kubernetes-terraform-and-github-actions-on-77d5ea47f108)].
+
+---
+
+## Contact
+
+For questions or further discussions, feel free to reach out to me or connect with me on [[LinkedIn Profile](https://linkedin.com/in/gabrielokom/)].
