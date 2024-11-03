@@ -96,7 +96,8 @@ To build the application locally:
 
 Test the healthcheck endpoint:
 
-![image](https://github.com/user-attachments/assets/53eaa224-9e19-4624-ad54-c9820897f2b2)
+![image](https://github.com/user-attachments/assets/123bcd5b-b592-41d5-8751-b809bb4b7eb5)
+
 
 ---
 
