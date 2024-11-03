@@ -91,6 +91,7 @@ To build the application locally:
 ```bash
 ./gab-app.sh
 ```
+![image](https://github.com/user-attachments/assets/f9578f66-489c-4fc6-b6eb-2067c8492349)
 
 
 Test the healthcheck endpoint:
@@ -106,6 +107,7 @@ curl http://localhost:8080/healthcheck
     ]
 }
 ```
+![image](https://github.com/user-attachments/assets/53eaa224-9e19-4624-ad54-c9820897f2b2)
 
 ---
 
