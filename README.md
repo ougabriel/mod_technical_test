@@ -193,7 +193,7 @@ curl http://<load-balancer-ip>/healthcheck
 
 ## Demonstration
 
-For a live demonstration of the project, you can view the deployment in action at [[CHECK THE BLOG HERE](https://ougabriel.medium.com/ci-cd-project-deploy-a-python-app-with-docker-ecr-kubernetes-terraform-and-github-actions-on-77d5ea47f108)].
+For a live demonstration of the project, you can view the deployment in action at [[CHECK THE BLOG HERE]https://ougabriel.medium.com/ci-cd-pipeline-deploy-python-app-with-healthcheck-on-aws-eks-using-terraform-github-actions-cb9db07d93a1].
 
 ---
 
